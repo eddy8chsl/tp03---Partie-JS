@@ -1,3 +1,46 @@
+window.addEventListener("DOMContentLoaded", () => {
+  const options = {
+    series: [
+      { name: "Capital final", data: [] },
+      { name: "Capital initial", data: [] },
+      { name: "Versements cumulés", data: [] },
+      { name: "Intérêts cumulés", data: [] },
+    ],
+    chart: {
+      type: "area",
+      height: 350,
+      stacked: false,
+    },
+    colors: ["#2E86DE", "#1B9C85", "#F39C12", "#8E44AD"],
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      curve: "monotoneCubic",
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        opacityFrom: 1,
+        opacityTo: 0.5,
+      },
+    },
+    legend: {
+      position: "top",
+      horizontalAlign: "left",
+    },
+    xaxis: {
+      type: "datetime",
+    },
+  };
+
+  monGraphique = new ApexCharts(
+    document.querySelector("#simulatorChart"),
+    options,
+  );
+  monGraphique.render();
+});
+
 document
   .getElementById("simulator-form")
   .addEventListener("submit", function (e) {
@@ -38,22 +81,23 @@ document
     let versements_cumules = 0;
     let i = 1;
 
-    const serieInterets = [];
-    const serieVersements = [];
-    const seriePatrimoine = [];
-    const serieCapital = [];
+    const dataInterets = [];
+    const dataVersements = [];
+    const capitalFinal = [];
+    const capitalInitial = [];
 
     for (i = 1; i <= data.years * 12; i++) {
       patrimoine += patrimoine * rendement_mensuel + mensualite;
       interet_cumule += patrimoine * rendement_mensuel;
       versements_cumules += mensualite;
 
-      const timestamp = Date.now() + i * 30 * 24 * 60 * 60 * 1000;
+      const start = new Date().getTime();
+      const timestamp = start + i * 30 * 24 * 60 * 60 * 1000;
 
-      serieInterets.push([timestamp, Math.round(interet_cumule)]);
-      serieVersements.push([timestamp, Math.round(versements_cumules)]);
-      seriePatrimoine.push([timestamp, Math.round(patrimoine)]);
-      serieCapital.push([timestamp, Math.round(data.capital)]);
+      dataInterets.push([timestamp, Math.round(interet_cumule)]);
+      dataVersements.push([timestamp, Math.round(versements_cumules)]);
+      capitalFinal.push([timestamp, Math.round(patrimoine)]);
+      capitalInitial.push([timestamp, Math.round(data.capital)]);
     }
 
     data.interet_cumule = Math.round(interet_cumule);
@@ -77,34 +121,18 @@ document
         currency: "EUR",
       }).format(versements_cumules)}`;
 
-    var options = {
-      series: [
-        {
-          name: "Capital final",
-          data: seriePatrimoine,
-        },
-        {
-          name: "Capital de départ",
-          data: serieCapital,
-        },
-        {
-          name: "Versements cumulés",
-          data: serieVersements,
-        },
-        {
-          name: "Intérêts cumulés",
-          data: serieInterets,
-        },
-      ],
+    monGraphique.updateSeries([
+      { name: "Capital final", data: capitalFinal },
+      { name: "Capital initial", data: capitalInitial },
+      { name: "Versements cumulés", data: dataVersements },
+      { name: "Intérêts cumulés", data: dataInterets },
+    ]);
+
+    monGraphique.updateOptions({
       chart: {
         type: "area",
         height: 350,
         stacked: false,
-        /* events: {
-          selection: function (chart, e) {
-            console.log(new Date(e.xaxis.min));
-          },
-        }, */
       },
       colors: ["#2E86DE", "#1B9C85", "#F39C12", "#8E44AD"],
       dataLabels: {
@@ -127,10 +155,5 @@ document
       xaxis: {
         type: "datetime",
       },
-    };
-
-    var chart = new ApexCharts(document.querySelector("#chart"), options);
-    chart.render();
-
-    //console.log(data);
+    });
   });
