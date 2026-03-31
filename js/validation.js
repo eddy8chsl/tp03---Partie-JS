@@ -36,11 +36,24 @@ document
 
     let interet_cumule = 0;
     let versements_cumules = 0;
+    let i = 1;
 
-    for (let i = 1; i <= data.years * 12; i++) {
+    const serieInterets = [];
+    const serieVersements = [];
+    const seriePatrimoine = [];
+    const serieCapital = [];
+
+    for (i = 1; i <= data.years * 12; i++) {
       patrimoine += patrimoine * rendement_mensuel + mensualite;
       interet_cumule += patrimoine * rendement_mensuel;
       versements_cumules += mensualite;
+
+      const timestamp = Date.now() + i * 30 * 24 * 60 * 60 * 1000;
+
+      serieInterets.push([timestamp, Math.round(interet_cumule)]);
+      serieVersements.push([timestamp, Math.round(versements_cumules)]);
+      seriePatrimoine.push([timestamp, Math.round(patrimoine)]);
+      serieCapital.push([timestamp, Math.round(data.capital)]);
     }
 
     data.interet_cumule = Math.round(interet_cumule);
@@ -63,6 +76,61 @@ document
         style: "currency",
         currency: "EUR",
       }).format(versements_cumules)}`;
+
+    var options = {
+      series: [
+        {
+          name: "Capital final",
+          data: seriePatrimoine,
+        },
+        {
+          name: "Capital de départ",
+          data: serieCapital,
+        },
+        {
+          name: "Versements cumulés",
+          data: serieVersements,
+        },
+        {
+          name: "Intérêts cumulés",
+          data: serieInterets,
+        },
+      ],
+      chart: {
+        type: "area",
+        height: 350,
+        stacked: false,
+        /* events: {
+          selection: function (chart, e) {
+            console.log(new Date(e.xaxis.min));
+          },
+        }, */
+      },
+      colors: ["#000000", "#f70606", "#f00ef0", "#008FFB"],
+      dataLabels: {
+        enabled: false,
+      },
+      stroke: {
+        curve: "monotoneCubic",
+      },
+      fill: {
+        type: "gradient",
+        gradient: {
+          opacityFrom: 1,
+          opacityTo: 0.5,
+        },
+      },
+      legend: {
+        position: "top",
+        horizontalAlign: "left",
+      },
+      xaxis: {
+        type: "datetime",
+      },
+    };
+
+    var chart = new ApexCharts(document.querySelector("#chart"), options);
+    chart.render();
 
     //console.log(data);
   });
