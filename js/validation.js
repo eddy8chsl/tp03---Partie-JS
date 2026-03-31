@@ -106,7 +106,7 @@ document
           },
         }, */
       },
-      colors: ["#000000", "#f70606", "#f00ef0", "#008FFB"],
+      colors: ["#2E86DE", "#1B9C85", "#F39C12", "#8E44AD"],
       dataLabels: {
         enabled: false,
       },
